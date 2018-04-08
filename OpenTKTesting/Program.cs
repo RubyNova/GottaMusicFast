@@ -53,11 +53,9 @@ namespace OpenTKTesting
             //    AL.BufferData(source, ALFormat.Mono16, new IntPtr((short)(amp * short.MaxValue * Math.Sin(i * dt * freq))), dataCount, sampleFreq);
             //}
 
-            //AL.BufferData(buffers, ALFormat.Mono16, new AccelerometerMusicBuffer[10], 10, 10);
 
-
-            AL.SourceQueueBuffer(2, 1); //TODO: This doesn't work??? But if I stream them both into 3 it does, despite there being more than 1 audio source
-            AL.SourceQueueBuffer(3, 2);
+            AL.SourceQueueBuffer(3, 1); //TODO: This doesn't work??? But if I stream them both into 3 it does, despite there being more than 1 audio source
+            //AL.SourceQueueBuffer(3, 2);
             var bla = AL.GetError();
             if (bla != ALError.NoError)
             {
@@ -66,10 +64,26 @@ namespace OpenTKTesting
             AL.Source(sources, ALSourceb.Looping, true);
 
 
-
             AL.SourcePlay(sources);
+            bool sourceOne = true;
+            while (true)
+            {
+                Console.ReadKey();
+                AL.SourceStop(sources);
+                if (sourceOne)
+                {
+                    AL.SourceUnqueueBuffers(sources, 1);
+                    AL.SourceQueueBuffer(sources, 2);
+                }
+                else
+                {
+                    AL.SourceUnqueueBuffers(sources, 1);
+                    AL.SourceQueueBuffer(sources, 1);
+                }
+                sourceOne = !sourceOne;
+                AL.SourcePlay(sources);
+            }
 
-            Console.ReadKey();
 
             int multiplier = 4;
 

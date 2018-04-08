@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenTK.NETCore" Version="1.1.2749.6433" />
+    <PackageReference Include="opentk.netcore" Version="1.1.2749.6433" />
   </ItemGroup>
 
   <ItemGroup>

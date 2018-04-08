@@ -4,7 +4,12 @@ using System.Text;
 
 namespace OpenTKTesting
 {
-    struct AccelerometerMusicBuffer
+    public class AccelerometerMusicBuffer
     {
+        public short this[int index]
+        {
+            get { return 0; }
+            set { }
+        }
     }
 }
