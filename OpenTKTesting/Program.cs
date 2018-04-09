@@ -13,26 +13,36 @@ namespace OpenTKTesting
         static unsafe void Main(string[] args)
         {
             //Initialize
-            var device = Alc.OpenDevice(null);
-            var context = Alc.CreateContext(device, (int*)null);
+            //var device = Alc.OpenDevice(null);
+            //var context = Alc.CreateContext(device, (int*)null);
 
-            Alc.MakeContextCurrent(context);
+            //Alc.MakeContextCurrent(context);
             //var buffer = new AccelerometerMusicBuffer();
-            var version = AL.Get(ALGetString.Version);
-            var vendor = AL.Get(ALGetString.Vendor);
-            var renderer = AL.Get(ALGetString.Renderer);
-            Console.WriteLine(version);
-            Console.WriteLine(vendor);
-            Console.WriteLine(renderer);
+            //var version = AL.Get(ALGetString.Version);
+            //var vendor = AL.Get(ALGetString.Vendor);
+            //var renderer = AL.Get(ALGetString.Renderer);
+            //Console.WriteLine(version);
+            //Console.WriteLine(vendor);
+            //Console.WriteLine(renderer);
+            var buffer = new AccelerometerMusicBuffer();
+            Console.WriteLine("ready!");
             Console.ReadKey();
 
+            uint i = 1;
+            while (true)
+            {
+                buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 440, YRaw = 10 }, Two = new Accelerometer { XRaw = 440, YRaw = 20 } });
+                buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 500, YRaw = 10 }, Two = new Accelerometer { XRaw = 440, YRaw = 20 } });
+
+                //Console.ReadLine();
+            }
             //Process
-            int buffers;
-            AL.GenBuffers(10, out buffers);
-            AL.GenSource(out uint sourceOne);
-            AL.GenSource(out uint sourceTwo);
-            int frequency = 440;
-            int sampleRate = 44100;
+            //int buffers;
+            //AL.GenBuffers(10, out buffers);
+            //AL.GenSource(out uint sourceOne);
+            //AL.GenSource(out uint sourceTwo);
+            //int frequency = 440;
+            //int sampleRate = 44100;
             //int dataCount = 0;
             //int incrementor = 0;
             //do
@@ -49,23 +59,23 @@ namespace OpenTKTesting
 
             //WORKS
 
-            double amplitude = 0.25 * short.MaxValue;
-            //double dt = 2 * Math.PI / sampleRate;
-            short[] sinData = new short[sampleRate];
-            for (int i = 0; i < sinData.Length; i++)
-            {
-                //sinData[i] = (short)(amplitude * Math.Sin((i + 1) * dt * sampleRate));
-                sinData[i] = (short)(amplitude * Math.Sin((2 * Math.PI * (i + 1) * frequency) / sampleRate));
-            }
-            AL.BufferData(1, ALFormat.Mono16, sinData, sinData.Length, sampleRate);
+            //double amplitude = 0.25 * short.MaxValue;
+            ////double dt = 2 * Math.PI / sampleRate;
+            //short[] sinData = new short[sampleRate];
+            //for (int i = 0; i < sinData.Length; i++)
+            //{
+            //    //sinData[i] = (short)(amplitude * Math.Sin((i + 1) * dt * sampleRate));
+            //    sinData[i] = (short)(amplitude * Math.Sin((2 * Math.PI * (i + 1) * frequency) / sampleRate));
+            //}
+            //AL.BufferData(1, ALFormat.Mono16, sinData, sinData.Length, sampleRate);
 
-            short[] sinDataTwo = new short[sampleRate];
-            for (int i = 0; i < sinDataTwo.Length; i++)
-            {
-                //sinData[i] = (short)(amplitude * Math.Sin((i + 1) * dt * sampleRate));
-                sinDataTwo[i] = (short)(amplitude * Math.Sin((2 * Math.PI * (i + 1) * (frequency - 10) / sampleRate)));
-            }
-            AL.BufferData(2, ALFormat.Mono16, sinDataTwo, sinDataTwo.Length, sampleRate);
+            //short[] sinDataTwo = new short[sampleRate];
+            //for (int i = 0; i < sinDataTwo.Length; i++)
+            //{
+            //    //sinData[i] = (short)(amplitude * Math.Sin((i + 1) * dt * sampleRate));
+            //    sinDataTwo[i] = (short)(amplitude * Math.Sin((2 * Math.PI * (i + 1) * (frequency - 10) / sampleRate)));
+            //}
+            //AL.BufferData(2, ALFormat.Mono16, sinDataTwo, sinDataTwo.Length, sampleRate);
 
             //for (int i = 1; i <= buffers; i++)
             //{
@@ -99,23 +109,23 @@ namespace OpenTKTesting
             //}
 
 
-            AL.SourceQueueBuffer((int)sourceOne, 1); //TODO: This doesn't work??? But if I stream them both into 3 it does, despite there being more than 1 audio source
-            AL.SourceQueueBuffer((int)sourceOne, 2);
-            //AL.SourceQueueBuffer((int)sourceTwo, 2);
-            //AL.SourceQueueBuffer(3, 2);
-            var bla = AL.GetError();
-            if (bla != ALError.NoError)
-            {
-                throw new Exception(bla.ToString());
-            }
-            //AL.Source(sourceOne, ALSourceb.Looping, true);
-            AL.Source(sourceTwo, ALSourceb.Looping, true);
+            //AL.SourceQueueBuffer((int)sourceOne, 1); //TODO: This doesn't work??? But if I stream them both into 3 it does, despite there being more than 1 audio source
+            //AL.SourceQueueBuffer((int)sourceOne, 2);
+            ////AL.SourceQueueBuffer((int)sourceTwo, 2);
+            ////AL.SourceQueueBuffer(3, 2);
+            //var bla = AL.GetError();
+            //if (bla != ALError.NoError)
+            //{
+            //    throw new Exception(bla.ToString());
+            //}
+            ////AL.Source(sourceOne, ALSourceb.Looping, true);
+            //AL.Source(sourceTwo, ALSourceb.Looping, true);
 
-            AL.SourcePlay(sourceOne);
-            //AL.SourcePlay(sourceTwo);
-            AL.SourceUnqueueBuffer((int)sourceOne);
-            AL.SourcePlay(sourceOne);
-            Console.ReadKey();
+            //AL.SourcePlay(sourceOne);
+            ////AL.SourcePlay(sourceTwo);
+            //AL.SourceUnqueueBuffer((int)sourceOne);
+            //AL.SourcePlay(sourceOne);
+            //Console.ReadKey();
             //AL.SourcePlay(sourceTwo);
             //Console.ReadKey();
             //bool isSourceOne = true;
@@ -142,23 +152,10 @@ namespace OpenTKTesting
             //}
 
 
-            int multiplier = 4;
+            //int multiplier = 4;
 
 
             ///Dispose
-            if (context != ContextHandle.Zero)
-            {
-                Alc.MakeContextCurrent(ContextHandle.Zero);
-
-                Alc.DestroyContext(context);
-            }
-            context = ContextHandle.Zero;
-
-            if (device != IntPtr.Zero)
-            {
-                Alc.CloseDevice(device);
-            }
-            device = IntPtr.Zero;
             //Console.ReadLine();
         }
     }

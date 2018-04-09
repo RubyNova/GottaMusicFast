@@ -4,37 +4,62 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Linq;
+using OpenTK;
 
 namespace OpenTKTesting
 {
-    public unsafe class AccelerometerMusicBuffer
+    public unsafe class AccelerometerMusicBuffer : IDisposable
     {
         private List<int> _leftHandData;
         private List<int> _rightHandData;
-        private List<int> _buffers;
+        private int[] _buffers;
         private uint _sourceOne;
         private uint _sourceTwo;
         private int _sampleRate;
+        private IntPtr _device;
+        private ContextHandle _context;
+        private bool _firstleft = true;
+        private bool _firstRight = true;
 
         public AccelerometerMusicBuffer()
         {
-            var device = Alc.OpenDevice(null);
-            var context = Alc.CreateContext(device, (int*)null);
-            Alc.MakeContextCurrent(context);
+            _device = Alc.OpenDevice(null);
+            _context = Alc.CreateContext(_device, (int*)null);
+            Alc.MakeContextCurrent(_context);
             //AL.GenBuffers(10, out uint buffers);
-            _buffers = new List<int>();
             AL.GenSource(out _sourceOne);
             AL.GenSource(out _sourceTwo);
+            _buffers = AL.GenBuffers(4);
             _sampleRate = 44100;
             _leftHandData = new List<int>();
             _rightHandData = new List<int>();
         }
 
-        private int GetNextBuffer()
+        private int GetNextBuffer(int source)
         {
-            AL.GenBuffer(out uint result);
-            _buffers.Add((int)result);
-            return (int)result;
+            if (source == _sourceOne)
+            {
+                switch (_firstleft)
+                {
+                    case true:
+                        _firstleft = false;
+                        return _buffers[0];
+                    case false:
+                        _firstleft = true;
+                        return _buffers[1];
+                }
+            }
+            else
+            {
+                switch (_firstRight)
+                {
+                    case true:
+                        return _buffers[2];
+                    case false:
+                        return _buffers[3];
+                }
+            }
+            return -1;
         }
 
         public void PushNewInput(SendData data)
@@ -43,7 +68,7 @@ namespace OpenTKTesting
             var right = data.Two;
 
             double leftVol = left.YRaw;
-            while (leftVol > 0)
+            while (leftVol >= 1)
             {
                 leftVol /= 10;
             }
@@ -67,27 +92,62 @@ namespace OpenTKTesting
 
         }
 
-        public void UpdateSource(double vol, int frequency, int source)
+        private void UpdateSource(double vol, int frequency, int source)
         {
+            ALError err;
+            if (frequency % 2 != 0)
+            {
+                ++frequency;
+            }
             short[] wave = ResolveSineWave(vol, frequency);
-            var buffer = GetNextBuffer();
-            AL.BufferData(buffer, ALFormat.Mono16, wave, wave.Length, frequency);
-            AL.SourceQueueBuffer(source, buffer);
-            if (AL.GetSourceState(source) == ALSourceState.Stopped || AL.GetSourceState(source) == ALSourceState.Paused)
+            int removedBuffer = AL.SourceUnqueueBuffer(source);
+            if (removedBuffer != 0)
+            {
+                AL.BufferData(removedBuffer, ALFormat.Mono16, wave, wave.Length, _sampleRate);
+                err = AL.GetError();
+                if (err != ALError.NoError)
+                {
+                    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
+                }
+                AL.SourceQueueBuffer(source, removedBuffer);
+                err = AL.GetError();
+                if (err != ALError.NoError)
+                {
+                    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
+                }
+            }
+            else
+            {
+                var buffer = GetNextBuffer(source);
+                AL.BufferData(buffer, ALFormat.Mono16, wave, wave.Length, _sampleRate); //BUG: throws here, not sure why
+                err = AL.GetError();
+                if (err != ALError.NoError)
+                {
+                    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
+                }
+                AL.SourceQueueBuffer(source, buffer);
+                err = AL.GetError();
+                if (err != ALError.NoError)
+                {
+                    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
+                }
+            }
+
+
+            if (AL.GetSourceState(source) != ALSourceState.Playing)
             {
                 AL.SourcePlay(source);
             }
-            AL.SourceUnqueueBuffer(source);
-            AL.DeleteBuffer(_buffers[0]);
-            _buffers.RemoveAt(0);
-            var err = AL.GetError();
+
+            err = AL.GetError();
             if (err != ALError.NoError)
             {
                 throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
             }
-            //AL.GetSource(_sourceOne, (ALGetSourcei)0x1016, out int result); gets the number of buffers that have been processed
         }
 
+
+        //AL.GetSource(_sourceOne, (ALGetSourcei)0x1016, out int result); gets the number of buffers that have been processed
         private short[] ResolveSineWave(double vol, int frequency)
         {
             short[] sinData = new short[_sampleRate];
@@ -97,6 +157,23 @@ namespace OpenTKTesting
                 sinData[i] = (short)(vol * Math.Sin((2 * Math.PI * (i + 1) * frequency) / _sampleRate));
             }
             return sinData;
+        }
+
+        public void Dispose()
+        {
+            if (_context != ContextHandle.Zero)
+            {
+                Alc.MakeContextCurrent(ContextHandle.Zero);
+
+                Alc.DestroyContext(_context);
+            }
+            _context = ContextHandle.Zero;
+
+            if (_device != IntPtr.Zero)
+            {
+                Alc.CloseDevice(_device);
+            }
+            _device = IntPtr.Zero;
         }
     }
 }
