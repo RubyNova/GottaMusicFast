@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Linq;
 using OpenTK;
+using System.Threading.Tasks;
 
 namespace OpenTKTesting
 {
@@ -87,8 +88,8 @@ namespace OpenTKTesting
 
             var rightFrequency = right.XRaw;
 
-            UpdateSource(leftVol, (int)leftFrequency, (int)_sourceOne);
-            UpdateSource(rightVol, (int)rightFrequency, (int)_sourceTwo);
+            UpdateSource(leftVol, (int)rightFrequency, (int)_sourceOne);
+            //UpdateSource(rightVol, (int)rightFrequency, (int)_sourceTwo); BUG: Only one wave works
 
         }
 
@@ -103,34 +104,35 @@ namespace OpenTKTesting
             int removedBuffer = AL.SourceUnqueueBuffer(source);
             if (removedBuffer != 0)
             {
+                UpdateBufferSwitch(removedBuffer, source);
                 AL.BufferData(removedBuffer, ALFormat.Mono16, wave, wave.Length, _sampleRate);
                 err = AL.GetError();
-                if (err != ALError.NoError)
-                {
-                    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
-                }
+                //if (err != ALError.NoError && err != ALError.InvalidValue)
+                //{
+                //    await Task.Delay(200);
+                //}
                 AL.SourceQueueBuffer(source, removedBuffer);
-                err = AL.GetError();
-                if (err != ALError.NoError)
-                {
-                    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
-                }
+                //err = AL.GetError();
+                //if (err != ALError.NoError && err != ALError.InvalidValue)
+                //{
+                //    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
+                //}
             }
             else
             {
                 var buffer = GetNextBuffer(source);
                 AL.BufferData(buffer, ALFormat.Mono16, wave, wave.Length, _sampleRate); //BUG: throws here, not sure why
-                err = AL.GetError();
-                if (err != ALError.NoError)
-                {
-                    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
-                }
+                //err = AL.GetError();
+                //if (err != ALError.NoError && err != ALError.InvalidValue)
+                //{
+                //    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
+                //}
                 AL.SourceQueueBuffer(source, buffer);
-                err = AL.GetError();
-                if (err != ALError.NoError)
-                {
-                    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
-                }
+                //err = AL.GetError();
+                //if (err != ALError.NoError && err != ALError.InvalidValue)
+                //{
+                //    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
+                //}
             }
 
 
@@ -139,10 +141,36 @@ namespace OpenTKTesting
                 AL.SourcePlay(source);
             }
 
-            err = AL.GetError();
-            if (err != ALError.NoError)
+            //err = AL.GetError();
+            //if (err != ALError.NoError)
+            //{
+            //    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
+            //}
+        }
+
+        private void UpdateBufferSwitch(int removedBuffer, int sourceId)
+        {
+            if (sourceId == _sourceOne)
             {
-                throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
+                if (removedBuffer == _buffers[0])
+                {
+                    _firstleft = false;
+                }
+                else if (removedBuffer == _buffers[1])
+                {
+                    _firstleft = true;
+                }
+            }
+            else if (sourceId == _sourceTwo)
+            {
+                if (removedBuffer == _buffers[2])
+                {
+                    _firstleft = false;
+                }
+                else if (removedBuffer == _buffers[3])
+                {
+                    _firstleft = true;
+                }
             }
         }
 
