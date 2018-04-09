@@ -2,6 +2,8 @@
 using System.IO;
 using OpenTK;
 using OpenTK.Audio.OpenAL;
+using System.Linq;
+using System.Collections.Generic;
 
 
 namespace OpenTKTesting
@@ -15,7 +17,7 @@ namespace OpenTKTesting
             var context = Alc.CreateContext(device, (int*)null);
 
             Alc.MakeContextCurrent(context);
-
+            //var buffer = new AccelerometerMusicBuffer();
             var version = AL.Get(ALGetString.Version);
             var vendor = AL.Get(ALGetString.Vendor);
             var renderer = AL.Get(ALGetString.Renderer);
@@ -25,64 +27,119 @@ namespace OpenTKTesting
             Console.ReadKey();
 
             //Process
-            int buffers, sources;
-            AL.GenBuffers(2, out buffers);
-            AL.GenSources(2, out sources);
+            int buffers;
+            AL.GenBuffers(10, out buffers);
+            AL.GenSource(out uint sourceOne);
+            AL.GenSource(out uint sourceTwo);
+            int frequency = 440;
+            int sampleRate = 44100;
+            //int dataCount = 0;
+            //int incrementor = 0;
+            //do
+            //{
+            //    if (dataCount != 0)
+            //    {
+            //        ++incrementor;
+            //    }
+            //    dataCount = sampleRate / frequency;
+            //    dataCount += incrementor;
+            //} while (sampleRate % dataCount != 0);
 
-            int sampleFreq = 44100;
-            double dt = 2 * Math.PI / sampleFreq;
-            double amp = 0.5;
 
-            int freq = 440;
-            var dataCount = sampleFreq / freq;
 
-            var sinData = new short[dataCount];
-            for (int i = 0; i < sinData.Length; ++i)
+            //WORKS
+
+            double amplitude = 0.25 * short.MaxValue;
+            //double dt = 2 * Math.PI / sampleRate;
+            short[] sinData = new short[sampleRate];
+            for (int i = 0; i < sinData.Length; i++)
             {
-                sinData[i] = (short)(amp * short.MaxValue * Math.Sin(i * dt * freq));
+                //sinData[i] = (short)(amplitude * Math.Sin((i + 1) * dt * sampleRate));
+                sinData[i] = (short)(amplitude * Math.Sin((2 * Math.PI * (i + 1) * frequency) / sampleRate));
             }
-            AL.BufferData(1, ALFormat.Mono16, sinData, sinData.Length, sampleFreq);
-            var sinDataTwo = new short[sampleFreq / 400];
-            for (int i = 0; i < sinData.Length; ++i)
+            AL.BufferData(1, ALFormat.Mono16, sinData, sinData.Length, sampleRate);
+
+            short[] sinDataTwo = new short[sampleRate];
+            for (int i = 0; i < sinDataTwo.Length; i++)
             {
-                sinDataTwo[i] = (short)(amp * short.MaxValue * Math.Sin(i * dt * freq));
+                //sinData[i] = (short)(amplitude * Math.Sin((i + 1) * dt * sampleRate));
+                sinDataTwo[i] = (short)(amplitude * Math.Sin((2 * Math.PI * (i + 1) * (frequency - 10) / sampleRate)));
             }
-            AL.BufferData(2, ALFormat.Mono16, sinDataTwo, sinDataTwo.Length, sampleFreq);
+            AL.BufferData(2, ALFormat.Mono16, sinDataTwo, sinDataTwo.Length, sampleRate);
+
+            //for (int i = 1; i <= buffers; i++)
+            //{
+            //    short[] ree = new short[sampleRate];
+            //    for (int j = 0; j < ree.Length; j++)
+            //    {
+            //        //sinData[i] = (short)(amplitude * Math.Sin((i + 1) * dt * sampleRate));
+            //        ree[j] = (short)(amplitude * Math.Sin((2 * Math.PI * (j + 1) * (frequency + (100 * i))) / sampleRate));
+            //    }
+            //    AL.BufferData(i, ALFormat.Mono16, ree, ree.Length, sampleRate);
+
+            //    AL.SourceQueueBuffer((int)sourceOne, i);
+            //    var meme = AL.GetError();
+            //    if (meme != ALError.NoError)
+            //    {
+            //        throw new Exception(meme.ToString());
+            //    }
+            //}
+
+
+
+            //var sinDataTwo = new double[sampleRate / 400];
+            //for (int i = 0; i < sinDataTwo.Length; i++)
+            //{
+            //    sinDataTwo[i] = Math.Sin((i + 1) * dt * freq);
+            //}
+            //AL.BufferData(2, ALFormat.Mono16, sinDataTwo, sinDataTwo.Length, sampleRate);
             //for (int i = 0; i < dataCount; i++)
             //{
             //    AL.BufferData(source, ALFormat.Mono16, new IntPtr((short)(amp * short.MaxValue * Math.Sin(i * dt * freq))), dataCount, sampleFreq);
             //}
 
 
-            AL.SourceQueueBuffer(3, 1); //TODO: This doesn't work??? But if I stream them both into 3 it does, despite there being more than 1 audio source
+            AL.SourceQueueBuffer((int)sourceOne, 1); //TODO: This doesn't work??? But if I stream them both into 3 it does, despite there being more than 1 audio source
+            AL.SourceQueueBuffer((int)sourceOne, 2);
+            //AL.SourceQueueBuffer((int)sourceTwo, 2);
             //AL.SourceQueueBuffer(3, 2);
             var bla = AL.GetError();
             if (bla != ALError.NoError)
             {
                 throw new Exception(bla.ToString());
             }
-            AL.Source(sources, ALSourceb.Looping, true);
+            //AL.Source(sourceOne, ALSourceb.Looping, true);
+            AL.Source(sourceTwo, ALSourceb.Looping, true);
 
+            AL.SourcePlay(sourceOne);
+            //AL.SourcePlay(sourceTwo);
+            AL.SourceUnqueueBuffer((int)sourceOne);
+            AL.SourcePlay(sourceOne);
+            Console.ReadKey();
+            //AL.SourcePlay(sourceTwo);
+            //Console.ReadKey();
+            //bool isSourceOne = true;
+            //while (true)
+            //{
+            //    Console.ReadKey();
 
-            AL.SourcePlay(sources);
-            bool sourceOne = true;
-            while (true)
-            {
-                Console.ReadKey();
-                AL.SourceStop(sources);
-                if (sourceOne)
-                {
-                    AL.SourceUnqueueBuffers(sources, 1);
-                    AL.SourceQueueBuffer(sources, 2);
-                }
-                else
-                {
-                    AL.SourceUnqueueBuffers(sources, 1);
-                    AL.SourceQueueBuffer(sources, 1);
-                }
-                sourceOne = !sourceOne;
-                AL.SourcePlay(sources);
-            }
+            //    if (isSourceOne)
+            //    {
+            //        //AL.SourceUnqueueBuffers((int)sourceOne, 1);
+            //        //AL.SourceQueueBuffer((int)sourceOne, 2);
+            //        AL.SourcePlay(sourceOne);
+            //        AL.SourceStop(sourceTwo);
+            //    }
+            //    else
+            //    {
+            //        AL.SourcePlay(sourceTwo);
+            //        AL.SourceStop(sourceOne);
+            //        //AL.SourceUnqueueBuffers((int)sourceOne, 1);
+            //        //AL.SourceQueueBuffer((int)sourceOne, 1);
+            //    }
+            //    isSourceOne = !isSourceOne;
+            //    //AL.SourcePlay((int)sourceOne);
+            //}
 
 
             int multiplier = 4;
