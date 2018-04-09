@@ -67,7 +67,7 @@ namespace OpenTKTesting
 
         }
 
-        private void UpdateSource(double vol, int frequency, int source)
+        public void UpdateSource(double vol, int frequency, int source)
         {
             short[] wave = ResolveSineWave(vol, frequency);
             var buffer = GetNextBuffer();
