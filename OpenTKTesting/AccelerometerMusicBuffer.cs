@@ -27,10 +27,12 @@ namespace OpenTKTesting
             _device = Alc.OpenDevice(null);
             _context = Alc.CreateContext(_device, (int*)null);
             Alc.MakeContextCurrent(_context);
-            //AL.GenBuffers(10, out uint buffers);
+            //AL.GenBuffers(1, out uint buffers);
+            _buffers = AL.GenBuffers(4);
+            //_buffers = buffers;
             AL.GenSource(out _sourceOne);
             AL.GenSource(out _sourceTwo);
-            _buffers = AL.GenBuffers(4);
+
             _sampleRate = 44100;
             _leftHandData = new List<int>();
             _rightHandData = new List<int>();
@@ -79,7 +81,7 @@ namespace OpenTKTesting
             var leftFrequency = left.XRaw;
 
             double rightVol = right.YRaw;
-            while (rightVol > 0)
+            while (rightVol >= 1)
             {
                 rightVol /= 10;
             }
@@ -88,8 +90,8 @@ namespace OpenTKTesting
 
             var rightFrequency = right.XRaw;
 
-            UpdateSource(leftVol, (int)rightFrequency, (int)_sourceOne);
-            //UpdateSource(rightVol, (int)rightFrequency, (int)_sourceTwo); BUG: Only one wave works
+            UpdateSource(leftVol, (int)leftFrequency, (int)_sourceOne);
+            UpdateSource(rightVol, (int)rightFrequency, (int)_sourceTwo); //BUG: Only one wave works
 
         }
 
@@ -122,12 +124,12 @@ namespace OpenTKTesting
             {
                 var buffer = GetNextBuffer(source);
                 AL.BufferData(buffer, ALFormat.Mono16, wave, wave.Length, _sampleRate); //BUG: throws here, not sure why
-                //err = AL.GetError();
-                //if (err != ALError.NoError && err != ALError.InvalidValue)
+                err = AL.GetError();
+                //if (err == ALError.NoError)
                 //{
-                //    throw new OpenTK.Audio.AudioException($"OpenAL returned the following error in the native code: {err.ToString()}");
+                    AL.SourceQueueBuffer(source, buffer);
                 //}
-                AL.SourceQueueBuffer(source, buffer);
+                Console.WriteLine("MEME");
                 //err = AL.GetError();
                 //if (err != ALError.NoError && err != ALError.InvalidValue)
                 //{
