@@ -31,12 +31,12 @@ namespace OpenTKTesting
             uint i = 1;
             while (true)
             {
-                buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 440, YRaw = 10 }, Two = new Accelerometer { XRaw = 500, YRaw = 20 } });
+                buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 440, YRaw = 10 }, Two = new Accelerometer { XRaw = 440 * 2, YRaw = 20 } });
                 Thread.Sleep(530); //BUG: THIS FIXES IT??? WHY???
-                buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 500, YRaw = 10 }, Two = new Accelerometer { XRaw = 600, YRaw = 20 } });
+                buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 500, YRaw = 10 }, Two = new Accelerometer { XRaw = 500 * 3, YRaw = 20 } });
                 //Console.ReadLine();
                 Thread.Sleep(530);
-                buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 550, YRaw = 10 }, Two = new Accelerometer { XRaw = 700, YRaw = 20 } });
+                buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 550, YRaw = 10 }, Two = new Accelerometer { XRaw = 550 * 2, YRaw = 20 } });
                 Thread.Sleep(530);
                 //Console.ReadLine();
                 //Console.ReadLine();

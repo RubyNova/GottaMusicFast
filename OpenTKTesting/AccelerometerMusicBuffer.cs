@@ -21,6 +21,10 @@ namespace OpenTKTesting
         private ContextHandle _context;
         private bool _firstleft = true;
         private bool _firstRight = true;
+        private uint _sourceThree;
+        private uint _sourceFour;
+        private bool _firstleftOffset = true;
+        private bool _firstRightOffset = true;
 
         public AccelerometerMusicBuffer()
         {
@@ -28,10 +32,12 @@ namespace OpenTKTesting
             _context = Alc.CreateContext(_device, (int*)null);
             Alc.MakeContextCurrent(_context);
             //AL.GenBuffers(1, out uint buffers);
-            _buffers = AL.GenBuffers(4);
+            _buffers = AL.GenBuffers(8);
             //_buffers = buffers;
             AL.GenSource(out _sourceOne);
             AL.GenSource(out _sourceTwo);
+            AL.GenSource(out _sourceThree);
+            AL.GenSource(out _sourceFour);
 
             _sampleRate = 44100;
             _leftHandData = new List<int>();
@@ -52,14 +58,34 @@ namespace OpenTKTesting
                         return _buffers[1];
                 }
             }
-            else
+            else if(source == _sourceTwo)
             {
-                switch (_firstRight)
+                switch (_firstleftOffset)
                 {
                     case true:
                         return _buffers[2];
                     case false:
                         return _buffers[3];
+                }
+            }
+            else if (source == _sourceThree)
+            {
+                switch (_firstRight)
+                {
+                    case true:
+                        return _buffers[4];
+                    case false:
+                        return _buffers[5];
+                }
+            }
+            else
+            {
+                switch (_firstRightOffset)
+                {
+                    case true:
+                        return _buffers[6];
+                    case false:
+                        return _buffers[7];
                 }
             }
             return -1;
@@ -79,7 +105,7 @@ namespace OpenTKTesting
             leftVol *= short.MaxValue;
 
             var leftFrequency = left.XRaw;
-
+            var leftFrequencyOffset = left.XRaw * 1.5;
             double rightVol = right.YRaw;
             while (rightVol >= 1)
             {
@@ -89,10 +115,12 @@ namespace OpenTKTesting
             rightVol *= short.MaxValue;
 
             var rightFrequency = right.XRaw;
+            var rightFrequencyOffset = right.XRaw * 1.5;
 
             UpdateSource(leftVol, (int)leftFrequency, (int)_sourceOne);
-            UpdateSource(rightVol, (int)rightFrequency, (int)_sourceTwo); //BUG: Only one wave works
-
+            UpdateSource(leftVol, (int)leftFrequencyOffset, (int)_sourceTwo);
+            UpdateSource(rightVol, (int)rightFrequency, (int)_sourceThree);
+            UpdateSource(rightVol, (int)rightFrequencyOffset, (int)_sourceFour);
         }
 
         private void UpdateSource(double vol, int frequency, int source)
@@ -167,11 +195,33 @@ namespace OpenTKTesting
             {
                 if (removedBuffer == _buffers[2])
                 {
-                    _firstleft = false;
+                    _firstleftOffset = false;
                 }
                 else if (removedBuffer == _buffers[3])
                 {
-                    _firstleft = true;
+                    _firstleftOffset = true;
+                }
+            }
+            else if (sourceId == _sourceThree)
+            {
+                if (removedBuffer == _buffers[4])
+                {
+                    _firstRight = false;
+                }
+                else if (removedBuffer == _buffers[5])
+                {
+                    _firstRight = true;
+                }
+            }
+            else if (sourceId == _sourceFour)
+            {
+                if (removedBuffer == _buffers[6])
+                {
+                    _firstRightOffset = false;
+                }
+                else if (removedBuffer == _buffers[7])
+                {
+                    _firstRightOffset = true;
                 }
             }
         }
