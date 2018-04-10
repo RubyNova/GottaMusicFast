@@ -6,7 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace OpenTKTesting
+namespace AccelerometerMusicConverter
 {
     class Program
     {
@@ -29,18 +29,36 @@ namespace OpenTKTesting
             //Console.ReadKey();
 
             uint i = 1;
+
+            Console.WriteLine("Enter IP: (enter nothing to skip)");
+            string input = Console.ReadLine();
+            if (input != String.Empty) Client.ConnectIP = input;
+
+            Thread clientT = new Thread(new ThreadStart(Client.StartClient));
+            clientT.Start();
+
             while (true)
             {
-                buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 4405, YRaw = 10 }, Two = new Accelerometer { XRaw = 4405 * 2, YRaw = 20 } });
-                Thread.Sleep(530); //BUG: THIS FIXES IT??? WHY???
-                buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 5005, YRaw = 10 }, Two = new Accelerometer { XRaw = 5005 * 3, YRaw = 20 } });
-                //Console.ReadLine();
-                Thread.Sleep(530);
-                buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 5505, YRaw = 10 }, Two = new Accelerometer { XRaw = 5505 * 2, YRaw = 20 } });
-                Thread.Sleep(530);
-                //Console.ReadLine();
-                //Console.ReadLine();
+                if(Client.DataBuffer.Count > 0)
+                {
+                    buffer.PushNewInput(Client.DataBuffer.First());
+                    Client.DataBuffer.RemoveAt(0);
+                    Thread.Sleep(530);
+                }
             }
+
+            //while (true)
+            //{
+            //    buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 440, YRaw = 10 }, Two = new Accelerometer { XRaw = 500, YRaw = 20 } });
+            //    Thread.Sleep(530); //BUG: THIS FIXES IT??? WHY???
+            //    buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 500, YRaw = 10 }, Two = new Accelerometer { XRaw = 550, YRaw = 20 } });
+            //    //Console.ReadLine();
+            //    Thread.Sleep(530);
+            //    buffer.PushNewInput(new SendData { One = new Accelerometer { XRaw = 550, YRaw = 10 }, Two = new Accelerometer { XRaw = 600, YRaw = 20 } });
+            //    Thread.Sleep(530);
+            //    //Console.ReadLine();
+            //    //Console.ReadLine();
+            //}
             //Process
             //int buffers;
             //AL.GenBuffers(10, out buffers);

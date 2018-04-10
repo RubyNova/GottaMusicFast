@@ -5,7 +5,9 @@ VisualStudioVersion = 15.0.27428.2015
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GottaMusicFast", "GottaMusicFast\GottaMusicFast.fsproj", "{B51BE18E-2A83-456A-B1F8-2A7023F9B8E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenTKTesting", "OpenTKTesting\OpenTKTesting.csproj", "{683002B3-69EE-4F9E-B4CC-B6FAB463D911}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenTKTesting", "OpenTKTesting\OpenTKTesting.csproj", "{683002B3-69EE-4F9E-B4CC-B6FAB463D911}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccelerometerMusicConverter", "AccelerometerMusicConverter\AccelerometerMusicConverter.csproj", "{67AAA67F-D838-460E-BA6C-193ABB1A6A20}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{683002B3-69EE-4F9E-B4CC-B6FAB463D911}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{683002B3-69EE-4F9E-B4CC-B6FAB463D911}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{683002B3-69EE-4F9E-B4CC-B6FAB463D911}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67AAA67F-D838-460E-BA6C-193ABB1A6A20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67AAA67F-D838-460E-BA6C-193ABB1A6A20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67AAA67F-D838-460E-BA6C-193ABB1A6A20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67AAA67F-D838-460E-BA6C-193ABB1A6A20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

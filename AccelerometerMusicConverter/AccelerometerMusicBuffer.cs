@@ -7,7 +7,7 @@ using System.Linq;
 using OpenTK;
 using System.Threading.Tasks;
 
-namespace OpenTKTesting
+namespace AccelerometerMusicConverter
 {
     public unsafe class AccelerometerMusicBuffer : IDisposable
     {
